@@ -57,6 +57,7 @@
     "check-format": "prettier --check .",
     "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
     "test": "jest",
+    "test:watch": "jest --watch",
     "eslint:fix": "eslint --fix",
     "local-release": "changeset version && changeset publish",
     "prepublishOnly": "npm run ci",
