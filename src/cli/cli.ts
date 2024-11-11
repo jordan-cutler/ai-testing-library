@@ -1,6 +1,6 @@
 // TODO: Use yargs and maybe inquirer
 
-import { generateTests, MainArguments } from 'src/main';
+import { generateTests, MainArguments } from 'src/lib/main';
 
 /*
 Example API:

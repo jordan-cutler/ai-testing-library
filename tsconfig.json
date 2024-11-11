@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     /* Base Options: */
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -45,19 +46,15 @@
     /* Allowing for React */
     "jsx": "react",
     "moduleResolution": "node",
+
+    /* If added to, ensure to also update moduleNameMapper in jest.config.ts */
     "paths": {
       "src/*": ["./src/*"],
-      "tests/*": ["./tests/*"],
-      "config/*": ["./config/*"],
-      "prompts/*": ["./prompts/*"],
-      "cli/*": ["./cli/*"],
+      "tests/*": ["./tests/*"]
     }
   },
   "include": [
     "src/**/*",
     "tests/**/*",
-    "cli/**/*",
-    "prompts/**/*",
-    "config/**/*"
   ],
 }

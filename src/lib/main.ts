@@ -17,7 +17,5 @@ export function generateTests({
   testCount,
   triesUntilGivingUp,
   runTestCommand,
-  openApiKey
-}: MainArguments) {
-
-}
+  openApiKey,
+}: MainArguments) {}

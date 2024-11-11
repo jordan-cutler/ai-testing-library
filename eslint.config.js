@@ -18,7 +18,7 @@ export default [
       },
     },
   },
-  pluginReact.configs.flat['jsx-runtime'],
+  // pluginReact.configs.flat['jsx-runtime'],
   {
     plugins: {
       'no-relative-import-paths': pluginNoRelativeImport,
