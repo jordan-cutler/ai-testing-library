@@ -30,10 +30,21 @@
     /*"declarationMap": true,*/
 
     /* No DOM required */
-    "lib": ["es2022"],
+    /* "lib": ["es2022"], */
 
-    /* Using tsup */
+    /* If your code runs in the DOM: */
+    "lib": ["es2022", "dom", "dom.iterable"],
+
+    /* Using tsup. If NOT transpiling with TypeScript: */
     "noEmit": true,
-    "module": "Preserve"
-  }
+    "module": "Preserve",
+
+    /* Ensure matchers like .toBeInTheDocument() are available */
+    "types": ["node", "jest", "@testing-library/jest-dom"],
+
+    /* Allowing for React */
+    "jsx": "react",
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*", "tests/**/*"]
 }
