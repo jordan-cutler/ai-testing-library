@@ -44,7 +44,20 @@
 
     /* Allowing for React */
     "jsx": "react",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "paths": {
+      "src/*": ["./src/*"],
+      "tests/*": ["./tests/*"],
+      "config/*": ["./config/*"],
+      "prompts/*": ["./prompts/*"],
+      "cli/*": ["./cli/*"],
+    }
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "cli/**/*",
+    "prompts/**/*",
+    "config/**/*"
+  ],
 }
