@@ -1,0 +1,34 @@
+name: CI
+
+# on specifies when the workflow should run. In this case, it runs on pull requests and pushes to the main branch.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# concurrency prevents multiple instances of the workflow from running at the same time, using cancel-in-progress to cancel any existing runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# jobs is a set of jobs to run. In this case, we have one job called ci.
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # actions/checkout@v4 checks out the code from the repository.
+      - uses: actions/checkout@v4
+
+      # actions/setup-node@v4 sets up Node.js and npm.
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run CI
+        run: npm run ci

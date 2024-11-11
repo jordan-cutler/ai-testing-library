@@ -1,6 +1,7 @@
 {
   "name": "ai-testing-library",
   "version": "1.0.0",
+  "main": "dist/index.js",
   "description": "A demo package for Total TypeScript",
   "keywords": [
     "demo",
@@ -21,12 +22,22 @@
   "type": "module",
   "license": "MIT",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.0",
+    "@changesets/cli": "^2.27.9",
     "prettier": "^3.3.3",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
   },
   "scripts": {
     "build": "tsc",
-    "ci": "npm run build",
-    "format": "prettier --write ."
+    "ci": "npm run build && npm run check-format && npm run check-exports && npm run lint && npm run test",
+    "format": "prettier --write .",
+    "check-format": "prettier --check .",
+    "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+    "test": "vitest run",
+    "test-watch": "vitest",
+    "local-release": "changeset version && changeset publish",
+    "prepublishOnly": "npm run ci",
+    "changeset": "changeset"
   }
 }
