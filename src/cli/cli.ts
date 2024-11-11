@@ -1,6 +1,6 @@
 // TODO: Use yargs and maybe inquirer
 
-import { generateTests, MainArguments } from 'src/lib/main';
+import { generateTests, GenerateTestsArguments } from 'src/lib/main';
 
 /*
 Example API:
@@ -26,7 +26,7 @@ ai-testing-library add-tests \
   --openapi-key=<string>
 */
 
-const options = {} as MainArguments;
+const options = {} as GenerateTestsArguments;
 
 const main = () => {
   generateTests(options);
