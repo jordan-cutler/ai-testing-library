@@ -16,7 +16,8 @@ You write tests that:
 const outputFormatInstructions = `
 Your response should be in a runnable format without any markdown or code block syntax.
 The output should be a valid TypeScript file that can be executed by Jest.
-Do not include \`\`\`typescript tags or section headings.
+
+***IMPORTANT: Do not include tags like \`\`\`typescript tags, \`\`\`javascript tags, or section headings.***
 `;
 
 export const generateInitialTestPrompt = ({
@@ -30,25 +31,64 @@ export const generateInitialTestPrompt = ({
   {
     role: 'system',
     content: `
-Your task is to generate a SINGLE passing test for the component.
-Focus on the most basic functionality first - usually rendering with default props.
+<expertise level>
+You are a test generation assistant. Generate React Testing Library tests in Typescript based on the provided component code and examples
+</expertise level>
 
-Key requirements:
-1. Create a renderComponent helper that accepts Partial<Props>
-2. Write ONE test that verifies basic rendering
-3. Keep the test simple and focused
-4. Ensure proper typing for all functions and variables
+<output format>
+${outputFormatInstructions}
 
+The goal is for me to be able to take what you give me and run my test runner against it. Do not include jsx wrapping tags around the output.
+</output format>
+`,
+  },
+  {
+    role: 'user',
+    content: `
+<context>
+I am working on an AI tool that will automatically generate tests for provided React components.
+</context>
+
+<request>
+I need you to write a test file using React Testing Library, Jest, and Typescript, based on the provided input file I give
+</request>
+
+<example input and outputs>
+Here are some example tests:\n${samples}
+</example input and outputs>
+
+<key information>
+Consider the following key points:
+- Avoid snapshot tests
+- Test AND import the component being exported from the source code. Only import what you know exists.
+- Use the most appropriate react-testing-library selector. Prefer \`byRole\` and \`byLabelText\` queries over \`byText\` queries
+- Create a top-level \`renderComponent\` function that renders the component using the \`react-testing-library\`'s \`render\` function. Our function should take in a \`Partial\` of the props of the component we are testing, which can be a set of overrides.
+- That \`renderComponent\` function will get called by all the tests.
+- First, your goal is to just get one basic test to pass which calls \`renderComponent\` correctly and
+- Mock out dependencies that aren't relevant to you.
+- Return the content in a runnable format. The goal is for me to be able to take what you give me and run my test runner against it. Do not include jsx wrapping tags around the output.
+- Create a renderComponent helper that accepts Partial<Props>
+- Write ONE test that verifies basic rendering
+- Keep the test simple and focused
+- Ensure proper typing for all functions and variables
+</key information>
+
+<additional instructions>
 If the test fails, consider:
 - Are the imports correct?
 - Is the component being rendered with required props?
 - Are the assertions testing what actually exists in the DOM?
 - Are you using appropriate queries?
-${outputFormatInstructions}`,
+</additional instructions>
+
+<desired outcome>
+The final output should be a runnable test file I can run with jest
+</desired outcome>
+`,
   },
   {
     role: 'user',
-    content: `Here are example tests for reference:\n${samples}\n\nComponent to test:\n${sourceCode}`,
+    content: `Component to test:\n${sourceCode}`,
   },
 ];
 

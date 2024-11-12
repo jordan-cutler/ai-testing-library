@@ -28,8 +28,9 @@ export async function generateRequiredTests({
           requiredCount: requiredTestCount,
         }),
       });
-
-      return await writeAndGetTestResult(generatedTest);
+      const res = await writeAndGetTestResult(generatedTest);
+      console.log({res });
+      return res;
     },
     {
       retryLimit,

@@ -22,16 +22,27 @@ export async function writeAndGetTestResult(
 
   const runTestStr = runTestCommand(outputFilePath);
   console.log(`Running tests via: ${runTestStr}`);
-  const { stderr } = await execAsync(runTestStr);
-  const testSummary = getTestSummaryOutput(stderr);
-  return { testSummary, testFileContents };
+  try {
+    const { stderr } = await execAsync(runTestStr);
+    const testSummary = getTestSummaryOutput(stderr);
+    return { testSummary, testFileContents };
+  } catch (error) {
+    // @ts-expect-error stderr on error
+    const testSummary = getTestSummaryOutput(error.stderr);
+    return { testSummary, testFileContents };
+  }
 }
 
 function getTestSummaryOutput(stderr: string): TestSummary {
   const testSummaryOutput = stderr
     .split('\n')
-    .find((line) => line.startsWith('Tests:'));
-  const testSummary = testSummaryOutput?.split(',');
+    .find((line) => line.includes('Tests:'));
+  const testSummary = testSummaryOutput
+    ?.split('Tests:')
+    .slice(1)
+    .join('')
+    .split(',')
+    .map((s) => s.trim());
   const passedOutput = testSummary?.find((s: string) => s.includes('passed'));
   const failedOutput = testSummary?.find((s: string) => s.includes('failed'));
   const totalOutput = testSummary?.find((s: string) => s.includes('total'));
