@@ -1,7 +1,7 @@
 import { GenerateTestsArguments, GenerateTestsResult } from 'src/lib/types';
 import { generateFirstPassingTest } from 'src/lib/tasks/step1/generateFirstPassingTest';
-import { generateRequiredTests } from 'src/lib/tasks/step2b/generateRequiredTests';
-import { fixFailedTests } from 'src/lib/tasks/step4/fixFailedTests';
+import { generateRequiredTests } from 'src/lib/tasks/step2/generateRequiredTests';
+import { fixFailedTests } from 'src/lib/tasks/step3/fixFailedTests';
 import * as fs from 'fs-extra';
 import { writeAndRunTests } from 'src/lib/utils/testUtils';
 
@@ -29,7 +29,7 @@ export async function taskManager({
     throw new Error('Failed to generate initial passing test');
   }
 
-  // Step 2b: Generate required number of tests with good coverage
+  // Step 2: Generate required number of tests with good coverage
   const requiredTestsResult = await generateRequiredTests({
     sourceCode,
     writeAndRunTests: writeAndRunTestsLocal,
@@ -38,7 +38,7 @@ export async function taskManager({
     retryLimit,
   });
 
-  // Step 4: Fix any failed tests
+  // Step 3: Fix any failed tests
   const finalResult = await fixFailedTests({
     sourceCode,
     currentTests: requiredTestsResult.testFileContents,
