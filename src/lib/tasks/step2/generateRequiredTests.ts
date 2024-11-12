@@ -20,11 +20,11 @@ export async function generateRequiredTests({
   retryLimit,
 }: GenerateRequiredTestsArgs): Promise<TestResult> {
   const result = await withRetry(
-    async (previousResult: TestResult) => {
+    async (previousResult?: TestResult) => {
       const generatedTest = await runCompletion({
         messages: generateRequiredTestsPrompt({
           sourceCode,
-          existingTests: previousResult.testFileContents,
+          existingTests: previousResult!.testFileContents,
           requiredCount: requiredTestCount,
         }),
       });

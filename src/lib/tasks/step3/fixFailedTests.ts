@@ -8,8 +8,8 @@ import { WriteAndRunTestsTask } from 'src/lib/tasks/types';
 import { withRetry } from 'src/lib/utils/retryManager';
 
 interface FixFailedTestsArgs {
-  currentTests: string;
   sourceCode: string;
+  currentTests: string;
   writeAndRunTests: WriteAndRunTestsTask;
   failedTestInfo: FailedTestInfo[];
   retryLimit: number;
@@ -22,37 +22,35 @@ export async function fixFailedTests({
   writeAndRunTests,
   retryLimit,
 }: FixFailedTestsArgs): Promise<TestResult> {
+  // If no failed tests, run the current tests to get a proper TestResult
   if (failedTestInfo.length === 0) {
+    const testSummary = await writeAndRunTests(currentTests);
     return {
       testFileContents: currentTests,
-      testSummary: { passed: 0, failed: 0, total: 0, stderrOutput: '' },
+      testSummary,
     };
   }
 
-  let lastError = '';
-
   const result = await withRetry(
-    async () => {
+    async (previousResult?: TestResult) => {
+      const currentResult = previousResult!;
+
       const generatedTest = await runCompletion({
         messages:
-          lastError === ''
+          currentResult.testSummary.failed === failedTestInfo.length
             ? generateFixFailedTestsPrompt({
                 sourceCode,
-                currentTests,
+                currentTests: currentResult.testFileContents,
                 failedTests: failedTestInfo,
               })
             : retryFailedGenerationPrompt({
                 sourceCode,
-                previousAttempt: currentTests,
-                error: lastError,
+                previousAttempt: currentResult.testFileContents,
+                error: `Failed tests: ${currentResult.testSummary.failed}. Total tests: ${currentResult.testSummary.total}`,
               }),
       });
 
       const testSummary = await writeAndRunTests(generatedTest);
-
-      if (testSummary.failed > 0) {
-        lastError = `Failed tests: ${testSummary.failed}. Total tests: ${testSummary.total}`;
-      }
 
       return {
         testFileContents: generatedTest,
@@ -61,10 +59,13 @@ export async function fixFailedTests({
     },
     {
       retryLimit,
+      initialValue: {
+        testFileContents: currentTests,
+        testSummary: { passed: 0, failed: failedTestInfo.length, total: failedTestInfo.length, stderrOutput: '' }
+      },
       shouldRetry: (result) => result.testSummary.failed > 0,
       onError: (error, attempt) => {
-        lastError = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`Attempt ${attempt} failed:`, lastError);
+        console.error(`Attempt ${attempt} failed:`, error);
       },
       onRetry: (lastResult, attempt) => {
         console.log(
