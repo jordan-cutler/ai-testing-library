@@ -2,7 +2,7 @@ import { GenerateTestsArguments, GenerateTestsResult } from 'src/lib/types';
 import { generateFirstPassingTest } from 'src/lib/tasks/step1/generateFirstPassingTest';
 import { generateRequiredTests } from 'src/lib/tasks/step2/generateRequiredTests';
 import { fixFailedTests } from 'src/lib/tasks/step3/fixFailedTests';
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import { writeAndGetTestResult } from 'src/lib/utils/testUtils';
 
 export async function taskManager({

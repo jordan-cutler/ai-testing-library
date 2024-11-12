@@ -1,8 +1,9 @@
-import { generateTests } from 'src/lib/generateTests';
+import { ENV } from 'src/config/env';
+import { taskManager } from 'src/lib/tasks/manager';
 
 const run = async () => {
   try {
-    await generateTests({
+    await taskManager({
       inputFilePath: 'tests/trials/AITest.tsx',
       outputFilePath: 'tests/trials/AITest.test.tsx',
       inputOutputSamplesPath: 'tests/trials/inputOutputSamples.ts',
@@ -10,7 +11,7 @@ const run = async () => {
       configPath: 'config/config.ts',
       retryLimit: 1,
       runTestCommand: (fileName: string) => `npm test ${fileName}`,
-      // openApiKey: ENV.OPENAI_API_KEY,
+      openApiKey: ENV.OPENAI_API_KEY,
     });
     console.log('Tests generated successfully');
   } catch (error) {
