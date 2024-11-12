@@ -11,7 +11,7 @@ ai-testing-library generate-tests \
   --configPath=<file> \
   --testCount=<num> \
   --inputOutputSamplesPath=<file> \
-  --triesUntilGivingUp=<num> \
+  --retryLimit=<num> \
   --runTestCommand=<string> \
   --openapi-key=<string>
 
@@ -21,7 +21,7 @@ ai-testing-library add-tests \
   --configPath=<file> \
   --testCount=<num> \
   --inputOutputSamplesPath=<file> \
-  --triesUntilGivingUp=<num> \
+  --retryLimit=<num> \
   --runTestCommand=<string> \
   --openapi-key=<string>
 */

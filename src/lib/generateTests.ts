@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { generateInitialTests } from 'src/prompts/prompts';
+import { generateInitialTestPrompt } from 'src/lib/prompts/prompts';
 import { runCompletion } from 'src/lib/api/openai';
 
 const execAsync = promisify(exec);
@@ -12,7 +12,7 @@ export interface GenerateTestsArguments {
   inputOutputSamplesPath: string;
   configPath: string;
   testCount: number;
-  triesUntilGivingUp: number;
+  retryLimit: number;
   runTestCommand: (fileName: string) => string;
   // openApiKey: string;
 }
@@ -25,7 +25,7 @@ export async function generateTests({
   outputFilePath,
   inputOutputSamplesPath,
   testCount,
-  triesUntilGivingUp,
+  retryLimit,
   runTestCommand,
 }: GenerateTestsArguments) {
   const resultsGenerated: AIGeneratedResult[] = [];
@@ -38,11 +38,11 @@ export async function generateTests({
     const testsGenerated = 0;
     let currentTry = 0;
 
-    while (testsGenerated < testCount && currentTry < triesUntilGivingUp) {
+    while (testsGenerated < testCount && currentTry < retryLimit) {
       try {
         // Generate test using OpenAI
         const generatedTest = await runCompletion({
-          messages: generateInitialTests(samples, sourceCode),
+          messages: generateInitialTestPrompt(samples, sourceCode),
         });
 
         const testSummary = await writeAndRunTests(

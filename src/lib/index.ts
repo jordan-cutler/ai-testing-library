@@ -8,7 +8,7 @@ const run = async () => {
       inputOutputSamplesPath: 'tests/trials/inputOutputSamples.ts',
       testCount: 1,
       configPath: 'config/config.ts',
-      triesUntilGivingUp: 1,
+      retryLimit: 1,
       runTestCommand: (fileName: string) => `npm test ${fileName}`,
       // openApiKey: ENV.OPENAI_API_KEY,
     });
