@@ -1,9 +1,6 @@
 import { TestResult } from 'src/lib/types';
 import { runCompletion } from 'src/lib/api/openai';
-import {
-  generateFixFailedTestsPrompt,
-  retryFailedGenerationPrompt,
-} from 'src/lib/prompts/prompts';
+import { fixFailedTestsPrompt } from 'src/lib/prompts/prompts';
 import { writeAndGetTestResultTask } from 'src/lib/tasks/types';
 import { withRetry } from 'src/lib/utils/retryManager';
 import { parseTestFileFailures } from 'src/lib/utils/testUtils';
@@ -33,18 +30,11 @@ export async function fixFailedTests({
       const failedTestInfo = await parseTestFileFailures(currentResult);
 
       const generatedTest = await runCompletion({
-        messages:
-          currentResult.testSummary.failed === failedTestInfo.length
-            ? generateFixFailedTestsPrompt({
-                sourceCode,
-                currentTests: currentResult.testFileContents,
-                failedTests: failedTestInfo,
-              })
-            : retryFailedGenerationPrompt({
-                sourceCode,
-                previousAttempt: currentResult.testFileContents,
-                error: `Failed tests: ${currentResult.testSummary.failed}. Total tests: ${currentResult.testSummary.total}`,
-              }),
+        messages: fixFailedTestsPrompt({
+          sourceCode,
+          currentTests: currentResult.testFileContents,
+          failedTests: failedTestInfo,
+        }),
       });
 
       return await writeAndGetTestResult(generatedTest);

@@ -83,7 +83,7 @@ ${outputFormatInstructions}`,
   },
 ];
 
-export const generateFixFailedTestsPrompt = ({
+export const fixFailedTestsPrompt = ({
   sourceCode,
   currentTests,
   failedTests,
@@ -100,8 +100,8 @@ export const generateFixFailedTestsPrompt = ({
   {
     role: 'system',
     content: `
-Your task is to fix specific failing tests while preserving passing tests.
-Analyze the error messages and modify only the failing tests.
+Your task is to fix failing tests while preserving passing tests.
+Analyze the specific test failures and modify only the failing tests.
 
 Key requirements:
 1. Only modify failing tests
@@ -115,6 +115,7 @@ Common fixes to consider:
 - Wrong assertion syntax
 - Missing test setup
 - Incorrect prop values
+- Type errors
 ${outputFormatInstructions}`,
   },
   {
