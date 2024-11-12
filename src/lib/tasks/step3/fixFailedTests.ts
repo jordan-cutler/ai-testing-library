@@ -25,14 +25,13 @@ export async function fixFailedTests({
   }
 
   const result = await withRetry(
-    async (previousResult?: TestResult) => {
-      const currentResult = previousResult!;
-      const failedTestInfo = await parseTestFileFailures(currentResult);
+    async (previousResult: TestResult) => {
+      const failedTestInfo = await parseTestFileFailures(previousResult);
 
       const generatedTest = await runCompletion({
         messages: fixFailedTestsPrompt({
           sourceCode,
-          currentTests: currentResult.testFileContents,
+          currentTests: previousResult.testFileContents,
           failedTests: failedTestInfo,
         }),
       });
