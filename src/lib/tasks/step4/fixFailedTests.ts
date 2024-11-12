@@ -1,8 +1,4 @@
-import {
-  GenerateTestsArguments,
-  TestSummary,
-  FailedTestInfo,
-} from 'src/lib/types';
+import { TestSummary, FailedTestInfo } from 'src/lib/types';
 import { runCompletion } from 'src/lib/api/openai';
 import {
   generateFixFailedTestsPrompt,

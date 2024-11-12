@@ -1,5 +1,6 @@
 export interface RetryOptions<T> {
   retryLimit: number;
+  initialValue: T;
   onError?: (error: unknown, attempt: number) => void;
   shouldRetry?: (result: T) => boolean;
   onRetry?: (lastResult: T, attempt: number) => void;
@@ -12,16 +13,16 @@ export interface RetryResult<T> {
 }
 
 export async function withRetry<T>(
-  operation: () => Promise<T>,
+  operation: (previousResult: T) => Promise<T>,
   options: RetryOptions<T>
 ): Promise<RetryResult<T>> {
-  const { retryLimit, onError, shouldRetry, onRetry } = options;
+  const { retryLimit, initialValue, onError, shouldRetry, onRetry } = options;
   let currentTry = 0;
-  let lastResult: T;
+  let lastResult: T = initialValue;
 
   while (currentTry < retryLimit) {
     try {
-      const result = await operation();
+      const result = await operation(lastResult);
       lastResult = result;
 
       // If no shouldRetry function is provided, or if it returns false,
@@ -47,10 +48,9 @@ export async function withRetry<T>(
     }
   }
 
-  // Return the last result with success: false if we've exhausted all retries
   return {
     success: false,
-    result: lastResult!,
+    result: lastResult,
     attempts: currentTry,
   };
 }

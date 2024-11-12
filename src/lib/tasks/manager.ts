@@ -1,7 +1,6 @@
 import { GenerateTestsArguments, GenerateTestsResult } from 'src/lib/types';
 import { generateFirstPassingTest } from 'src/lib/tasks/step1/generateFirstPassingTest';
-import { generateAdditionalTests } from 'src/lib/tasks/step2/generateAdditionalTests';
-import { verifyTestCount } from 'src/lib/tasks/step3/verifyTestCount';
+import { generateRequiredTests } from 'src/lib/tasks/step2b/generateRequiredTests';
 import { fixFailedTests } from 'src/lib/tasks/step4/fixFailedTests';
 import * as fs from 'fs-extra';
 import { writeAndRunTests } from 'src/lib/utils/testUtils';
@@ -30,33 +29,23 @@ export async function taskManager({
     throw new Error('Failed to generate initial passing test');
   }
 
-  // Step 2: Generate additional tests
-  const additionalTestsResult = await generateAdditionalTests({
+  // Step 2b: Generate required number of tests with good coverage
+  const requiredTestsResult = await generateRequiredTests({
     sourceCode,
     writeAndRunTests: writeAndRunTestsLocal,
     existingTests: firstTestResult.testFileContents,
+    requiredTestCount: testCount,
+    retryLimit,
   });
-
-  // Step 3: Verify test count
-  const verificationResult = await verifyTestCount({
-    sourceCode,
-    writeAndRunTests: writeAndRunTestsLocal,
-    testResult: additionalTestsResult,
-    testCount: testCount,
-    retryLimit: 0,
-  });
-
-  if (!verificationResult.hasMinimumTests) {
-    throw new Error(
-      `Failed to generate minimum required tests. Expected ${testCount}, got ${verificationResult.currentTestCount}`,
-    );
-  }
 
   // Step 4: Fix any failed tests
   const finalResult = await fixFailedTests({
     sourceCode,
-    currentTests: verificationResult.testFileContents,
-    failedTestInfo: verificationResult.failedTests,
+    currentTests: requiredTestsResult.testFileContents,
+    failedTestInfo: await parseTestFileFailures(
+      requiredTestsResult.testFileContents,
+      requiredTestsResult.testSummary
+    ),
     writeAndRunTests: writeAndRunTestsLocal,
     retryLimit,
   });

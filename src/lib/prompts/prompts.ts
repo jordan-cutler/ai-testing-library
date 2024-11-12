@@ -240,6 +240,49 @@ ${testFileContents}
 Test Results Output:
 ${testOutput}`;
 
+// Add this new prompt function alongside the existing ones
+export const generateRequiredTestsPrompt = ({
+  sourceCode,
+  existingTests,
+  requiredCount,
+}: {
+  sourceCode: string;
+  existingTests: string;
+  requiredCount: number;
+}): Array<ChatCompletionMessageParam> => [
+  baseSystemMessage,
+  {
+    role: 'system',
+    content: `
+Your task is to expand the test suite to include at least ${requiredCount} meaningful tests.
+Build upon existing tests while ensuring comprehensive coverage.
+
+Key requirements:
+1. Use the existing renderComponent helper
+2. Add enough tests to reach at least ${requiredCount} total tests
+3. Ensure each new test covers unique scenarios
+4. Focus on meaningful coverage, not just quantity
+
+Test scenarios to consider:
+- Different prop combinations and values
+- User interactions and state changes
+- Error handling and edge cases
+- Accessibility features
+- Component lifecycle
+- Integration with parent components
+- Conditional rendering
+- Event handlers and callbacks
+${outputFormatInstructions}`,
+  },
+  {
+    role: 'user',
+    content: `
+Component source:\n${sourceCode}\n
+Current test file:\n${existingTests}\n
+Please enhance the test suite to include at least ${requiredCount} meaningful tests while maintaining quality and coverage.`,
+  },
+];
+
 /*
 OLD:
 export const generateInitialTests = (
