@@ -3,7 +3,10 @@ import { generateFirstPassingTest } from 'src/lib/tasks/step1/generateFirstPassi
 import { generateRequiredTests } from 'src/lib/tasks/step2/generateRequiredTests';
 import { fixFailedTests } from 'src/lib/tasks/step3/fixFailedTests';
 import * as fs from 'fs-extra';
-import { writeAndRunTests } from 'src/lib/utils/testUtils';
+import {
+  parseTestFileFailures,
+  writeAndRunTests,
+} from 'src/lib/utils/testUtils';
 
 export async function taskManager({
   inputFilePath,
@@ -44,7 +47,7 @@ export async function taskManager({
     currentTests: requiredTestsResult.testFileContents,
     failedTestInfo: await parseTestFileFailures(
       requiredTestsResult.testFileContents,
-      requiredTestsResult.testSummary
+      requiredTestsResult.testSummary,
     ),
     writeAndRunTests: writeAndRunTestsLocal,
     retryLimit,

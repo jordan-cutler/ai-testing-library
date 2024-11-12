@@ -1,54 +1,54 @@
-import { TestSummary } from 'src/lib/types';
+import { TestResult } from 'src/lib/types';
 import { runCompletion } from 'src/lib/api/openai';
 import { generateInitialTestPrompt } from 'src/lib/prompts/prompts';
 import { WriteAndRunTestsTask } from 'src/lib/tasks/types';
+import { withRetry } from 'src/lib/utils/retryManager';
 
-export interface GenerateFirstPassingTestArguments {
+interface GenerateFirstPassingTestArgs {
   sourceCode: string;
-  writeAndRunTests: WriteAndRunTestsTask;
   inputOutputSamples: string;
+  writeAndRunTests: WriteAndRunTestsTask;
   retryLimit: number;
-}
-
-export interface FirstTestResult {
-  success: boolean;
-  testFileContents: string;
-  testSummary: TestSummary;
 }
 
 export async function generateFirstPassingTest({
   sourceCode,
-  writeAndRunTests,
   inputOutputSamples,
+  writeAndRunTests,
   retryLimit,
-}: GenerateFirstPassingTestArguments): Promise<FirstTestResult | undefined> {
-  let currentTry = 0;
-
-  while (currentTry < retryLimit) {
-    try {
+}: GenerateFirstPassingTestArgs): Promise<TestResult | null> {
+  const result = await withRetry(
+    async () => {
       const generatedTest = await runCompletion({
         messages: generateInitialTestPrompt({
-          samples: inputOutputSamples,
           sourceCode,
+          samples: inputOutputSamples,
         }),
       });
 
       const testSummary = await writeAndRunTests(generatedTest);
 
-      if (testSummary.failed === 0 && testSummary.total > 0) {
-        return {
-          success: true,
-          testFileContents: generatedTest,
-          testSummary,
-        };
-      }
-
-      currentTry++;
-    } catch (error) {
-      currentTry++;
-      console.error('Error generating first test:', error);
+      return {
+        testFileContents: generatedTest,
+        testSummary,
+      };
+    },
+    {
+      retryLimit,
+      shouldRetry: (result) => result.testSummary.failed > 0,
+      onError: (error, attempt) => {
+        console.error(
+          `Error during first passing test generation attempt ${attempt}:`,
+          error
+        );
+      },
+      onRetry: (lastResult, attempt) => {
+        console.log(
+          `Attempt ${attempt}: Generated test failed. Retrying...`
+        );
+      },
     }
-  }
+  );
 
-  return undefined;
+  return result.success ? result.result : null;
 }
