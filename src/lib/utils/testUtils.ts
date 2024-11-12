@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { TestSummary } from 'src/lib/types';
+import { TestResult, TestSummary } from 'src/lib/types';
 import { parseTestResultsPrompt } from 'src/lib/prompts/prompts';
 import { callGPTWithFunctions, ChatFunction } from 'src/lib/api/openai';
 
@@ -13,18 +13,18 @@ export interface FailedTestInfo {
   testCode: string;
 }
 
-export async function writeAndRunTests(
+export async function writeAndGetTestResult(
   runTestCommand: (fileName: string) => string,
   outputFilePath: string,
   testFileContents: string,
-): Promise<TestSummary> {
+): Promise<TestResult> {
   await fs.writeFile(outputFilePath, testFileContents);
 
   const runTestStr = runTestCommand(outputFilePath);
   console.log(`Running tests via: ${runTestStr}`);
   const { stderr } = await execAsync(runTestStr);
   const testSummary = getTestSummaryOutput(stderr);
-  return testSummary;
+  return { testSummary, testFileContents };
 }
 
 function getTestSummaryOutput(stderr: string): TestSummary {
@@ -51,16 +51,15 @@ function getTestSummaryOutput(stderr: string): TestSummary {
 }
 
 export async function parseTestFileFailures(
-  testFileContents: string,
-  testSummary: TestSummary,
+  testResult: TestResult,
 ): Promise<FailedTestInfo[]> {
-  if (testSummary.failed === 0) {
+  if (testResult.testSummary.failed === 0) {
     return [];
   }
 
   const prompt = parseTestResultsPrompt({
-    testFileContents,
-    testOutput: testSummary.stderrOutput,
+    testFileContents: testResult.testFileContents,
+    testOutput: testResult.testSummary.stderrOutput,
   });
 
   const functionSchema: ChatFunction = {
@@ -85,7 +84,7 @@ export async function parseTestFileFailures(
       required: ['failedTests'],
     },
   };
-  
+
   const response = await callGPTWithFunctions({
     prompt,
     functionSchemas: [functionSchema],

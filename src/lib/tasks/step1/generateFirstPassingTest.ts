@@ -1,20 +1,20 @@
 import { TestResult } from 'src/lib/types';
 import { runCompletion } from 'src/lib/api/openai';
 import { generateInitialTestPrompt } from 'src/lib/prompts/prompts';
-import { WriteAndRunTestsTask } from 'src/lib/tasks/types';
+import { writeAndGetTestResultTask } from 'src/lib/tasks/types';
 import { withRetry } from 'src/lib/utils/retryManager';
 
 interface GenerateFirstPassingTestArgs {
   sourceCode: string;
   inputOutputSamples: string;
-  writeAndRunTests: WriteAndRunTestsTask;
+  writeAndGetTestResult: writeAndGetTestResultTask;
   retryLimit: number;
 }
 
 export async function generateFirstPassingTest({
   sourceCode,
   inputOutputSamples,
-  writeAndRunTests,
+  writeAndGetTestResult,
   retryLimit,
 }: GenerateFirstPassingTestArgs): Promise<TestResult | null> {
   const result = await withRetry(
@@ -26,12 +26,7 @@ export async function generateFirstPassingTest({
         }),
       });
 
-      const testSummary = await writeAndRunTests(generatedTest);
-
-      return {
-        testFileContents: generatedTest,
-        testSummary,
-      };
+      return await writeAndGetTestResult(generatedTest);
     },
     {
       retryLimit,
@@ -39,15 +34,13 @@ export async function generateFirstPassingTest({
       onError: (error, attempt) => {
         console.error(
           `Error during first passing test generation attempt ${attempt}:`,
-          error
+          error,
         );
       },
       onRetry: (lastResult, attempt) => {
-        console.log(
-          `Attempt ${attempt}: Generated test failed. Retrying...`
-        );
+        console.log(`Attempt ${attempt}: Generated test failed. Retrying...`);
       },
-    }
+    },
   );
 
   return result.success ? result.result : null;

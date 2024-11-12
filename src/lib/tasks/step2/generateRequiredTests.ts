@@ -1,20 +1,20 @@
 import { TestResult } from 'src/lib/types';
 import { runCompletion } from 'src/lib/api/openai';
 import { generateRequiredTestsPrompt } from 'src/lib/prompts/prompts';
-import { WriteAndRunTestsTask } from 'src/lib/tasks/types';
+import { writeAndGetTestResultTask } from 'src/lib/tasks/types';
 import { withRetry } from 'src/lib/utils/retryManager';
 
 interface GenerateRequiredTestsArgs {
   sourceCode: string;
-  writeAndRunTests: WriteAndRunTestsTask;
-  existingTests: string;
+  writeAndGetTestResult: writeAndGetTestResultTask;
+  existingTests: TestResult;
   requiredTestCount: number;
   retryLimit: number;
 }
 
 export async function generateRequiredTests({
   sourceCode,
-  writeAndRunTests,
+  writeAndGetTestResult,
   existingTests,
   requiredTestCount,
   retryLimit,
@@ -29,33 +29,25 @@ export async function generateRequiredTests({
         }),
       });
 
-      const testSummary = await writeAndRunTests(generatedTest);
-
-      return {
-        testFileContents: generatedTest,
-        testSummary,
-      };
+      return await writeAndGetTestResult(generatedTest);
     },
     {
       retryLimit,
-      initialValue: {
-        testFileContents: existingTests,
-        testSummary: { passed: 0, failed: 0, total: 0, stderrOutput: '' }
-      },
+      initialValue: existingTests,
       shouldRetry: (result) => result.testSummary.total < requiredTestCount,
       onError: (error, attempt) => {
         console.error(
           `Error during required test generation attempt ${attempt}:`,
-          error
+          error,
         );
       },
       onRetry: (lastResult, attempt) => {
         console.log(
           `Attempt ${attempt}: Generated ${lastResult.testSummary.total} tests, ` +
-          `but need at least ${requiredTestCount}. Retrying with current progress...`
+            `but need at least ${requiredTestCount}. Retrying with current progress...`,
         );
       },
-    }
+    },
   );
 
   return result.result;

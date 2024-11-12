@@ -45,7 +45,7 @@ export async function generateTests({
           messages: generateInitialTestPrompt(samples, sourceCode),
         });
 
-        const testSummary = await writeAndRunTests(
+        const testSummary = await writeAndGetTestResult(
           runTestCommand,
           outputFilePath,
           generatedTest,
@@ -140,7 +140,7 @@ function getBestAttempt(
   }, resultsGenerated[0]!);
 }
 
-async function writeAndRunTests(
+async function writeAndGetTestResult(
   runTestCommand: (fileName: string) => string,
   outputFilePath: string,
   testFileContents: string,

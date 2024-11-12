@@ -1,3 +1,5 @@
-import { TestSummary } from "src/lib/types";
+import { TestResult } from 'src/lib/types';
 
-export type WriteAndRunTestsTask = (testContents: string) => Promise<TestSummary>;
+export type writeAndGetTestResultTask = (
+  testContents: string,
+) => Promise<TestResult>;

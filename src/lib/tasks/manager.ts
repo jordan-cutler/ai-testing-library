@@ -3,10 +3,7 @@ import { generateFirstPassingTest } from 'src/lib/tasks/step1/generateFirstPassi
 import { generateRequiredTests } from 'src/lib/tasks/step2/generateRequiredTests';
 import { fixFailedTests } from 'src/lib/tasks/step3/fixFailedTests';
 import * as fs from 'fs-extra';
-import {
-  parseTestFileFailures,
-  writeAndRunTests,
-} from 'src/lib/utils/testUtils';
+import { writeAndGetTestResult } from 'src/lib/utils/testUtils';
 
 export async function taskManager({
   inputFilePath,
@@ -18,14 +15,14 @@ export async function taskManager({
 }: GenerateTestsArguments): Promise<GenerateTestsResult> {
   const sourceCode = await fs.readFile(inputFilePath, 'utf-8');
   const samples = await fs.readFile(inputOutputSamplesPath, 'utf-8');
-  const writeAndRunTestsLocal = (testContents: string) =>
-    writeAndRunTests(runTestCommand, outputFilePath, testContents);
+  const writeAndGetTestResultLocal = (testContents: string) =>
+    writeAndGetTestResult(runTestCommand, outputFilePath, testContents);
 
   // Step 1: Generate first passing test
   const firstTestResult = await generateFirstPassingTest({
     sourceCode,
     inputOutputSamples: samples,
-    writeAndRunTests: writeAndRunTestsLocal,
+    writeAndGetTestResult: writeAndGetTestResultLocal,
     retryLimit: retryLimit,
   });
   if (!firstTestResult) {
@@ -35,8 +32,8 @@ export async function taskManager({
   // Step 2: Generate required number of tests with good coverage
   const requiredTestsResult = await generateRequiredTests({
     sourceCode,
-    writeAndRunTests: writeAndRunTestsLocal,
-    existingTests: firstTestResult.testFileContents,
+    writeAndGetTestResult: writeAndGetTestResultLocal,
+    existingTests: firstTestResult,
     requiredTestCount: testCount,
     retryLimit,
   });
@@ -44,12 +41,8 @@ export async function taskManager({
   // Step 3: Fix any failed tests
   const finalResult = await fixFailedTests({
     sourceCode,
-    currentTests: requiredTestsResult.testFileContents,
-    failedTestInfo: await parseTestFileFailures(
-      requiredTestsResult.testFileContents,
-      requiredTestsResult.testSummary,
-    ),
-    writeAndRunTests: writeAndRunTestsLocal,
+    currentTests: requiredTestsResult,
+    writeAndGetTestResult: writeAndGetTestResultLocal,
     retryLimit,
   });
 
