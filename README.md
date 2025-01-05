@@ -1,4 +1,4 @@
-**ai-testing-library**
+# ai-testing-library
 
 Generate passing tests for a JS/TS file
 
